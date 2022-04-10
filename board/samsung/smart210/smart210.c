@@ -133,8 +133,8 @@ void clock_init(void)
                 (4 << 4)  |     /* A2M_RATIO = 4, freq(A2M) = SCLKAPLL / (A2M_RATIO + 1) = 200MHz */
                 (4 << 8)  |     /* HCLK_MSYS_RATIO = 4, freq(HCLK_MSYS) = ARMCLK / (HCLK_MSYS_RATIO + 1) = 200MHz */
                 (1 << 12) |     /* PCLK_MSYS_RATIO = 1, freq(PCLK_MSYS) = HCLK_MSYS / (PCLK_MSYS_RATIO + 1) = 100MHz */
-                (3 << 16) | /* HCLK_DSYS_RATIO = 3, freq(HCLK_DSYS) = MOUT_DSYS / (HCLK_DSYS_RATIO + 1) = 166MHz */
-                (1 << 20) | /* PCLK_DSYS_RATIO = 1, freq(PCLK_DSYS) = HCLK_DSYS / (PCLK_DSYS_RATIO + 1) = 83MHz */
+                (3 << 16) | 	/* HCLK_DSYS_RATIO = 3, freq(HCLK_DSYS) = MOUT_DSYS / (HCLK_DSYS_RATIO + 1) = 166MHz */
+                (1 << 20) | 	/* PCLK_DSYS_RATIO = 1, freq(PCLK_DSYS) = HCLK_DSYS / (PCLK_DSYS_RATIO + 1) = 83MHz */
                 (4 << 24) |     /* HCLK_PSYS_RATIO = 4, freq(HCLK_PSYS) = MOUT_PSYS / (HCLK_PSYS_RATIO + 1) = 133MHz */
                 (1 << 28);      /* PCLK_PSYS_RATIO = 1, freq(PCLK_PSYS) = HCLK_PSYS / (PCLK_PSYS_RATIO + 1) = 66MHz */
         writel(val, &clock->div0);
@@ -222,11 +222,12 @@ void ddr_init(void)
 void copy_bl2_to_ram(void)
 {
 /*
-** ch:  閫氶亾
-** sb:  璧峰鍧?
-** bs:  鍧楀ぇ灏?
-** dst: 鐩殑鍦?
-** i:   鏄惁鍒濆鍖?
+ * 从SD/MMC拷贝（加载）块到内存中的函数 
+** ch:  通道号
+** sb:  起始块号
+** bs:  块数量
+** dst: 要拷贝到内存的什么位置上
+** i:   是否需要初始化
 */
 #define CopySDMMCtoMem(ch, sb, bs, dst, i) \
         (((u8(*)(int, u32, unsigned short, u32*, u8))\
@@ -238,56 +239,56 @@ void copy_bl2_to_ram(void)
 
 #define NF8_ReadPage_Adv(a,b,c) (((int(*)(u32, u32, u8*))(*((u32 *)0xD0037F90)))(a,b,c))
 
-        u32 bl2Size = 250 * 1024;       // 250K
+        u32 bl2Size = 250 * 1024;       		// 250K
 
         u32 OM = *(volatile u32 *)(0xE0000004); // OM Register
-        OM &= 0x1F;                                     // 鍙栦綆5浣?
+        OM &= 0x1F;                             // 取出低5位
 
         if (OM == 0x2)                          // NAND 2 KB, 5cycle 8-bit ECC
         {
-                u32 cfg = 0;
-                struct s5pv210_nand *nand_reg = (struct s5pv210_nand *)(struct s5pv210_nand *)samsung_get_base_nand();
+            u32 cfg = 0;
+            struct s5pv210_nand *nand_reg = (struct s5pv210_nand *)(struct s5pv210_nand *)samsung_get_base_nand();
 
-                /* initialize hardware */
-                /* HCLK_PSYS=133MHz(7.5ns) */
-                cfg =   (0x1 << 23) |   /* Disable 1-bit and 4-bit ECC */
+            /* initialize hardware */
+            /* HCLK_PSYS=133MHz(7.5ns) */
+            cfg =   (0x1 << 23) |   /* Disable 1-bit and 4-bit ECC */
+                    (0x3 << 12) |   /* 7.5ns * 2 > 12ns tALS tCLS */
+                    (0x2 << 8) |    /* (1+1) * 7.5ns > 12ns (tWP) */
+                    (0x1 << 4) |    /* (0+1) * 7.5 > 5ns (tCLH/tALH) */
+                    (0x0 << 3) |    /* SLC NAND Flash */
+                    (0x0 << 2) |    /* 2KBytes/Page */
+                    (0x1 << 1);     /* 5 address cycle */
 
-                                (0x3 << 12) |   /* 7.5ns * 2 > 12ns tALS tCLS */
-                                (0x2 << 8) |    /* (1+1) * 7.5ns > 12ns (tWP) */
-                                (0x1 << 4) |    /* (0+1) * 7.5 > 5ns (tCLH/tALH) */
-                                (0x0 << 3) |    /* SLC NAND Flash */
-                                (0x0 << 2) |    /* 2KBytes/Page */
-                                (0x1 << 1);             /* 5 address cycle */
+            writel(cfg, &nand_reg->nfconf);
 
-                writel(cfg, &nand_reg->nfconf);
+            writel((0x1 << 1) | (0x1 << 0), &nand_reg->nfcont);
+            /* Disable chip select and Enable NAND Flash Controller */
 
-                writel((0x1 << 1) | (0x1 << 0), &nand_reg->nfcont);
-                /* Disable chip select and Enable NAND Flash Controller */
+            /* Config GPIO */
+            MP0_1CON &= ~(0xFFFF << 8);
+            MP0_1CON |= (0x3333 << 8);
+            MP0_3CON = 0x22222222;
+            MP0_6CON = 0x22222222;
 
-                /* Config GPIO */
-                MP0_1CON &= ~(0xFFFF << 8);
-                MP0_1CON |= (0x3333 << 8);
-                MP0_3CON = 0x22222222;
-                MP0_6CON = 0x22222222;
-
-                int i = 0;
-                int pages = bl2Size / 2048;             //
-                int offset = 0x4000 / 2048;                     // u-boot.bin
-                u8 *p = (u8 *)CONFIG_SYS_SDRAM_BASE;
-                for (; i < pages; i++, p += 2048, offset += 1)
-                        NF8_ReadPage_Adv(offset / 64, offset % 64, p);
+            int i = 0;
+            int pages = bl2Size / 2048;             //
+            int offset = 0x4000 / 2048;             // u-boot.bin
+            u8 *p = (u8 *)CONFIG_SYS_SDRAM_BASE;
+            for (; i < pages; i++, p += 2048, offset += 1)
+            	NF8_ReadPage_Adv(offset / 64, offset % 64, p);
         }
         else if (OM == 0xC)             // SD/MMC
         {
-                u32 V210_SDMMC_BASE = *(volatile u32 *)(0xD0037488);    // V210_SDMMC_BASE
-                u8 ch = 0;
+            u32 V210_SDMMC_BASE = *(volatile u32 *)(0xD0037488);    // V210_SDMMC_BASE
+            u8 ch = 0;
 
-                /* 7.9.1 SD/MMC REGISTER MAP */
-                if (V210_SDMMC_BASE == 0xEB000000)              //
-                        ch = 0;
-                else if (V210_SDMMC_BASE == 0xEB200000) // 
-                        ch = 2;
-                CopySDMMCtoMem(ch, 32, bl2Size / 512, (u32 *)CONFIG_SYS_SDRAM_BASE, 0);
+            /* 7.9.1 SD/MMC REGISTER MAP */
+            if (V210_SDMMC_BASE == 0xEB000000)              //
+                    ch = 0;
+            else if (V210_SDMMC_BASE == 0xEB200000) // 
+                    ch = 2;
+			// 将BL2 从SD卡（32块开始的250k区域数据）拷贝到SDRAM中
+            CopySDMMCtoMem(ch, 32, bl2Size / 512, (u32 *)CONFIG_SYS_SDRAM_BASE, 0);
         }
 }
 #endif
