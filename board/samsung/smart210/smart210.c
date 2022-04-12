@@ -239,8 +239,6 @@ void copy_bl2_to_ram(void)
 
 #define NF8_ReadPage_Adv(a,b,c) (((int(*)(u32, u32, u8*))(*((u32 *)0xD0037F90)))(a,b,c))
 
-        u32 bl2Size = 250 * 1024;       		// 250K
-
         u32 OM = *(volatile u32 *)(0xE0000004); // OM Register
         OM &= 0x1F;                             // 取出低5位
 
@@ -271,8 +269,8 @@ void copy_bl2_to_ram(void)
             MP0_6CON = 0x22222222;
 
             int i = 0;
-            int pages = bl2Size / 2048;             //
-            int offset = 0x4000 / 2048;             // u-boot.bin
+            int pages = BL2_SIZE / 2048;            
+            int offset = BL2_START_OFFSET * 512 / 2048;
             u8 *p = (u8 *)CONFIG_SYS_SDRAM_BASE;
             for (; i < pages; i++, p += 2048, offset += 1)
             	NF8_ReadPage_Adv(offset / 64, offset % 64, p);
@@ -288,7 +286,7 @@ void copy_bl2_to_ram(void)
             else if (V210_SDMMC_BASE == 0xEB200000) // 
                     ch = 2;
 			// 将BL2 从SD卡（32块开始的250k区域数据）拷贝到SDRAM中
-            CopySDMMCtoMem(ch, 32, bl2Size / 512, (u32 *)CONFIG_SYS_SDRAM_BASE, 0);
+            CopySDMMCtoMem(ch, BL2_START_OFFSET, BL2_SIZE / 512, (u32 *)CONFIG_SYS_SDRAM_BASE, 0);
         }
 }
 #endif

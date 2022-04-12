@@ -183,8 +183,11 @@
 
 /* SMDKC100 has 1 banks of DRAM, we use only one in U-Boot */
 #define CONFIG_NR_DRAM_BANKS	1
-#define PHYS_SDRAM_1		CONFIG_SYS_INIT_SP_ADDR	/* SDRAM Bank #1 */
+#define PHYS_SDRAM_1		CONFIG_SYS_SDRAM_BASE	/* SDRAM Bank #1 */
 #define PHYS_SDRAM_1_SIZE	(512 << 20)				/* 0x2000_0000, 512 MB Bank #1 */
+
+#define BL2_START_OFFSET 	32
+#define BL2_SIZE			(250 << 10)
 
 #define CONFIG_SYS_MONITOR_BASE	0x00000000
 
