@@ -22,13 +22,15 @@ lowlevel_init:
 	mov	r9, lr
 
 #ifdef CONFIG_SPL_BUILD
-        bl clock_init                   /* clock init */
-        bl ddr_init                     /* DDR init */
+    bl clock_init                   /* clock init */
+    bl ddr_init                     /* DDR init */
 
-        /* add by Flinn, for uart */
-        ldr r0, =0xE0200000     /* GPA0_CON */
-        ldr     r1, =0x22222222
-        str     r1, [r0]
+    /* for uart */
+    ldr 	r0, =0xE0200000     	/* GPA0CON */
+    ldr     r1, =0x00002222			/* UART_0 */
+    str     r1, [r0]
 
 #endif
-        mov     pc, r9                /* return */
+
+
+    mov     pc, r9                /* return */
