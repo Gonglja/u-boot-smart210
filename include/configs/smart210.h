@@ -28,6 +28,7 @@
 #define CONFIG_ARCH_CPU_INIT
 
 #define DEBUG
+
 #define CONFIG_DISPLAY_CPUINFO
 #define CONFIG_DISPLAY_BOARDINFO
 
@@ -54,7 +55,7 @@
 /*
  * select serial console configuration
  */
-#define CONFIG_SERIAL0			1	/* use SERIAL 0 on SMDKC100 */
+#define CONFIG_SERIAL0			1	/* use SERIAL 0 on SMART210 */
 
 /* PWM */
 #define CONFIG_PWM			1
@@ -74,9 +75,6 @@
 
 #define CONFIG_CMD_CACHE
 #define CONFIG_CMD_REGINFO
-#if 0
-#define CONFIG_CMD_ONENAND
-#endif
 #define CONFIG_CMD_ELF
 #define CONFIG_CMD_FAT
 #define CONFIG_CMD_MTDPARTS
@@ -169,23 +167,23 @@
 /*
  * Miscellaneous configurable options
  */
-#define CONFIG_SYS_LONGHELP		/* undef to save memory */
-#define CONFIG_SYS_HUSH_PARSER		/* use "hush" command parser	*/
-#define CONFIG_SYS_PROMPT		"smart210 # "
-#define CONFIG_SYS_CBSIZE	256	/* Console I/O Buffer Size */
-#define CONFIG_SYS_PBSIZE	384	/* Print Buffer Size */
-#define CONFIG_SYS_MAXARGS	16	/* max number of command args */
+#define CONFIG_SYS_LONGHELP				/* undef to save memory */
+#define CONFIG_SYS_HUSH_PARSER			/* use "hush" command parser	*/
+#define CONFIG_SYS_PROMPT				"smart210 # "
+#define CONFIG_SYS_CBSIZE				256	/* Console I/O Buffer Size */
+#define CONFIG_SYS_PBSIZE				384	/* Print Buffer Size */
+#define CONFIG_SYS_MAXARGS				16	/* max number of command args */
 /* Boot Argument Buffer Size */
-#define CONFIG_SYS_BARGSIZE		CONFIG_SYS_CBSIZE
+#define CONFIG_SYS_BARGSIZE				CONFIG_SYS_CBSIZE
 /* memtest works on */
-#define CONFIG_SYS_MEMTEST_START	CONFIG_SYS_SDRAM_BASE
-#define CONFIG_SYS_MEMTEST_END		(CONFIG_SYS_SDRAM_BASE + 0x5e00000)
-#define CONFIG_SYS_LOAD_ADDR		CONFIG_SYS_SDRAM_BASE
+#define CONFIG_SYS_MEMTEST_START		CONFIG_SYS_SDRAM_BASE
+#define CONFIG_SYS_MEMTEST_END			(CONFIG_SYS_SDRAM_BASE + 0x5e00000)
+#define CONFIG_SYS_LOAD_ADDR			CONFIG_SYS_SDRAM_BASE
 
-/* SMDKC100 has 1 banks of DRAM, we use only one in U-Boot */
-#define CONFIG_NR_DRAM_BANKS	1
-#define PHYS_SDRAM_1		CONFIG_SYS_SDRAM_BASE	/* SDRAM Bank #1 */
-#define PHYS_SDRAM_1_SIZE	(512 << 20)				/* 0x2000_0000, 512 MB Bank #1 */
+/* SMART210 has 1 banks of DRAM, we use only one in U-Boot */
+#define CONFIG_NR_DRAM_BANKS			1
+#define PHYS_SDRAM_1					CONFIG_SYS_SDRAM_BASE	/* SDRAM Bank #1 */
+#define PHYS_SDRAM_1_SIZE				(512 << 20)				/* 0x2000_0000, 512 MB Bank #1 */
 
 /*
 * BL2 相关
@@ -194,63 +192,50 @@
 #define BL2_START_OFFSET 				32			/* 在SDC/EMMC/NAND 中的偏移位置(512Bytes) */
 #define BL2_SIZE						(512 << 10) /* 要拷贝的BL2段大小(必须大于实际uboot)*/
 
-#define CONFIG_SYS_MONITOR_BASE	0x00000000
+#define CONFIG_SYS_MONITOR_BASE			0x00000000
 
 /*-----------------------------------------------------------------------
  * FLASH and environment organization
  */
-#define CONFIG_SYS_NO_FLASH		1
+#define CONFIG_SYS_NO_FLASH				1
 
-#define CONFIG_SYS_MONITOR_LEN		(256 << 10)	/* 256 KiB */
-#define CONFIG_IDENT_STRING		" for SMART210"
+#define CONFIG_SYS_MONITOR_LEN			(256 << 10)	/* 256 KiB */
+#define CONFIG_IDENT_STRING				" for SMART210"
 
 #if !defined(CONFIG_NAND_SPL) && (CONFIG_SYS_TEXT_BASE >= 0xc0000000)
 #define CONFIG_ENABLE_MMU
 #endif
 
 #ifdef CONFIG_ENABLE_MMU
-#define CONFIG_SYS_MAPPED_RAM_BASE	0xc0000000
+#define CONFIG_SYS_MAPPED_RAM_BASE		0xc0000000
 #else
-#define CONFIG_SYS_MAPPED_RAM_BASE	CONFIG_SYS_SDRAM_BASE
+#define CONFIG_SYS_MAPPED_RAM_BASE		CONFIG_SYS_SDRAM_BASE
 #endif
 
 /*-----------------------------------------------------------------------
  * Boot configuration
  */
-#if 0
-#define CONFIG_ENV_IS_IN_ONENAND	1
-#endif
 
-#define CONFIG_ENV_IS_IN_NAND		1
+#define CONFIG_ENV_IS_IN_NAND			1
+#define CONFIG_ENV_SIZE					(128 << 10)	/* 128KiB, 0x20000 */
+#define CONFIG_ENV_ADDR					(384 << 10)	/* 384KiB(u-boot + device_tree), 0x60000 */
+#define CONFIG_ENV_OFFSET				(384 << 10)	/* 384KiB(u-boot + device_tree), 0x60000 */
 
-#define CONFIG_ENV_SIZE			(128 << 10)	/* 128KiB, 0x20000 */
-#define CONFIG_ENV_ADDR			(384 << 10)	/* 384KiB(u-boot + device_tree), 0x60000 */
-#define CONFIG_ENV_OFFSET		(384 << 10)	/* 384KiB(u-boot + device_tree), 0x60000 */
 
-#define CONFIG_USE_ONENAND_BOARD_INIT
-#define CONFIG_SAMSUNG_ONENAND		1
-#define CONFIG_SYS_ONENAND_BASE		0xE7100000
+#define CONFIG_DOS_PARTITION			1
 
-#define CONFIG_DOS_PARTITION		1
-
-#define CONFIG_SYS_INIT_SP_ADDR	(CONFIG_SYS_LOAD_ADDR + PHYS_SDRAM_1_SIZE)
+#define CONFIG_SYS_INIT_SP_ADDR			(CONFIG_SYS_LOAD_ADDR + PHYS_SDRAM_1_SIZE)
 
 /*
  * Ethernet Contoller driver
  */
 #ifdef CONFIG_CMD_NET
-#if 0
-#define CONFIG_SMC911X         1       /* we have a SMC9115 on-board   */
-#define CONFIG_SMC911X_16_BIT  1       /* SMC911X_16_BIT Mode          */
-#define CONFIG_SMC911X_BASE    0x98800300      /* SMC911X Drive Base   */
-#endif
-#define CONFIG_ENV_SROM_BANK   1       /* Select SROM Bank-3 for Ethernet*/
-
+#define CONFIG_ENV_SROM_BANK   			1  /* Select SROM Bank-1 for Ethernet*/
 #define CONFIG_DRIVER_DM9000
 #define CONFIG_DM9000_NO_SROM
 #define CONFIG_DM9000_BASE              0x88000000
-#define DM9000_IO                               (CONFIG_DM9000_BASE)
-#define DM9000_DATA                             (CONFIG_DM9000_BASE + 0x4)
+#define DM9000_IO						(CONFIG_DM9000_BASE)
+#define DM9000_DATA						(CONFIG_DM9000_BASE + 0x4)
 #define CONFIG_CMD_PING
 #define CONFIG_IPADDR                   10.0.0.98
 #define CONFIG_SERVERIP                 10.0.0.20
@@ -259,8 +244,8 @@
 
 
 /*
-*Flattened Device Tree
-* by gonglanjing
+* Flattened Device Tree
+* by glj
 */
 #define CONFIG_OF_LIBFDT
 
@@ -273,8 +258,8 @@
 #define CONFIG_SYS_NAND_BASE        0xB0E00000
 #define CONFIG_NAND_S5PV210 
 #define CONFIG_S5PV210_NAND_HWECC
-#define CONFIG_SYS_NAND_ECCSIZE   512
-#define CONFIG_SYS_NAND_ECCBYTES 13
+#define CONFIG_SYS_NAND_ECCSIZE   	512
+#define CONFIG_SYS_NAND_ECCBYTES	13
 
 /*
 * filesystem

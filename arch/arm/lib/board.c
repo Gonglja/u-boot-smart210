@@ -276,9 +276,11 @@ void board_init_f(ulong bootflag)
 
 	gd->mon_len = (ulong)&__bss_end - (ulong)_start;
 #ifdef CONFIG_OF_EMBED
+/* smart210中未定义 */
 	/* Get a pointer to the FDT */
 	gd->fdt_blob = __dtb_db_begin;
 #elif defined CONFIG_OF_SEPARATE
+/* smart210中未定义 */
 	/* FDT is at end of image */
 	gd->fdt_blob = &_end;
 #endif
@@ -293,7 +295,8 @@ void board_init_f(ulong bootflag)
 	}
 
 #ifdef CONFIG_OF_CONTROL
-	/* For now, put this check after the console is ready */
+/* smart210中未定义 */
+/* For now, put this check after the console is ready */
 	if (fdtdec_prepare_fdt()) {
 		panic("** CONFIG_OF_CONTROL defined but no FDT - please see "
 			"doc/README.fdt-control");
