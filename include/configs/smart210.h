@@ -27,6 +27,7 @@
 
 #define CONFIG_ARCH_CPU_INIT
 
+#define DEBUG
 #define CONFIG_DISPLAY_CPUINFO
 #define CONFIG_DISPLAY_BOARDINFO
 
@@ -186,8 +187,12 @@
 #define PHYS_SDRAM_1		CONFIG_SYS_SDRAM_BASE	/* SDRAM Bank #1 */
 #define PHYS_SDRAM_1_SIZE	(512 << 20)				/* 0x2000_0000, 512 MB Bank #1 */
 
-#define BL2_START_OFFSET 	32
-#define BL2_SIZE			(250 << 10)
+/*
+* BL2 相关
+* by glj
+*/
+#define BL2_START_OFFSET 				32			/* 在SDC/EMMC/NAND 中的偏移位置(512Bytes) */
+#define BL2_SIZE						(512 << 10) /* 要拷贝的BL2段大小(必须大于实际uboot)*/
 
 #define CONFIG_SYS_MONITOR_BASE	0x00000000
 

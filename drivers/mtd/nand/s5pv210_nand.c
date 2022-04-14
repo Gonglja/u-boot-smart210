@@ -20,7 +20,7 @@ static void s5pv210_hwcontrol(struct mtd_info *mtd, int cmd, unsigned int ctrl)
 {
 	struct nand_chip *chip = mtd->priv;
 	struct s5pv210_nand *nand = (struct s5pv210_nand *)samsung_get_base_nand();
-	debug("hwcontrol(): 0x%02x 0x%02x\n", cmd, ctrl);
+	// debug("hwcontrol(): 0x%02x 0x%02x\n", cmd, ctrl);
 	ulong IO_ADDR_W = (ulong)nand;
 	if (ctrl & NAND_CTRL_CHANGE) {
 		
@@ -47,7 +47,7 @@ static void s5pv210_hwcontrol(struct mtd_info *mtd, int cmd, unsigned int ctrl)
 static int s5pv210_dev_ready(struct mtd_info *mtd)
 {
 	struct s5pv210_nand *nand = (struct s5pv210_nand *)samsung_get_base_nand();
-	debug("dev_ready\n");
+	//debug("dev_ready\n");
 	return readl(&nand->nfstat) & 0x01;
 }
 
