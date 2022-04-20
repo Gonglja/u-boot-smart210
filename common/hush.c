@@ -2938,7 +2938,7 @@ static int parse_stream(o_string *dest, struct p_context *ctx,
 	 * A single-quote triggers a bypass of the main loop until its mate is
 	 * found.  When recursing, quote state is passed in via dest->quote. */
 
-	debug_printf("parse_stream, end_trigger=%d\n",end_trigger);
+	debug("parse_stream, end_trigger=%d\n",end_trigger);
 	while ((ch=b_getch(input))!=EOF) {
 		m = map[ch];
 #ifdef __U_BOOT__
@@ -2946,7 +2946,7 @@ static int parse_stream(o_string *dest, struct p_context *ctx,
 #endif
 		next = (ch == '\n') ? 0 : b_peek(input);
 
-		debug_printf("parse_stream: ch=%c (%d) m=%d quote=%d - %c\n",
+		debug("parse_stream: ch=%c (%d) m=%d quote=%d - %c\n",
 			ch >= ' ' ? ch : '.', ch, m,
 			dest->quote, ctx->stack == NULL ? '*' : '.');
 
@@ -2963,7 +2963,7 @@ static int parse_stream(o_string *dest, struct p_context *ctx,
 					done_pipe(ctx,PIPE_SEQ);
 			}
 			if (ch == end_trigger && !dest->quote && ctx->w==RES_NONE) {
-				debug_printf("leaving parse_stream (triggered)\n");
+				debug("leaving parse_stream (triggered)\n");
 				return 0;
 			}
 #if 0
@@ -3094,12 +3094,12 @@ static int parse_stream(o_string *dest, struct p_context *ctx,
 			dest->nonnull = 1;
 			while (ch = b_getch(input), ch != EOF &&
 			    ch != SUBSTED_VAR_SYMBOL) {
-				debug_printf("subst, pass=%d\n", ch);
+				debug("subst, pass=%d\n", ch);
 				if (input->__promptme == 0)
 					return 1;
 				b_addchr(dest, ch);
 			}
-			debug_printf("subst, term=%d\n", ch);
+			debug("subst, term=%d\n", ch);
 			if (ch == EOF) {
 				syntax();
 				return 1;
@@ -3119,7 +3119,7 @@ static int parse_stream(o_string *dest, struct p_context *ctx,
 	 * that is, we were really supposed to get end_trigger, and never got
 	 * one before the EOF.  Can't use the standard "syntax error" return code,
 	 * so that parse_stream_outer can distinguish the EOF and exit smoothly. */
-	debug_printf("leaving parse_stream (EOF)\n");
+	debug("leaving parse_stream (EOF)\n");
 	if (end_trigger != '\0') return -1;
 	return 0;
 }

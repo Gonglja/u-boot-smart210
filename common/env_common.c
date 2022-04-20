@@ -147,13 +147,14 @@ int set_default_vars(int nvars, char * const vars[])
 int env_import(const char *buf, int check)
 {
 	env_t *ep = (env_t *)buf;
-
+	debug("env_import\r\n");
 	if (check) {
 		uint32_t crc;
 
 		memcpy(&crc, &ep->crc, sizeof(crc));
 
 		if (crc32(0, ep->data, ENV_SIZE) != crc) {
+			debug("env_import --> crc32\r\n");
 			set_default_env("!bad CRC");
 			return 0;
 		}
@@ -161,6 +162,7 @@ int env_import(const char *buf, int check)
 
 	if (himport_r(&env_htab, (char *)ep->data, ENV_SIZE, '\0', 0,
 			0, NULL)) {
+			debug("env_import --> himport_r\r\n");
 		gd->flags |= GD_FLG_ENV_READY;
 		return 1;
 	}

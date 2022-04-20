@@ -245,6 +245,7 @@ int readenv(size_t offset, u_char *buf)
 	size_t blocksize, len;
 	u_char *char_ptr;
 
+	debug("readenv\r\n");
 	blocksize = nand_info[0].erasesize;
 	if (!blocksize)
 		return 1;
@@ -265,7 +266,7 @@ int readenv(size_t offset, u_char *buf)
 			amount_loaded += len;
 		}
 	}
-
+	debug("end of readenv,amount_loaded=%d CONFIG_ENV_SIZE:%d\r\n",amount_loaded,CONFIG_ENV_SIZE);
 	if (amount_loaded != CONFIG_ENV_SIZE)
 		return 1;
 

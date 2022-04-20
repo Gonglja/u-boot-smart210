@@ -347,7 +347,7 @@ static void process_boot_delay(void)
 			bootdelay);
 #endif
 
-	debug ("### main_loop entered: bootdelay=%d\n\n", bootdelay);
+	debug ("### main_loop entered: bootdelay=%d\n", bootdelay);
 
 #if defined(CONFIG_MENU_SHOW)
 	bootdelay = menu_show(bootdelay);
