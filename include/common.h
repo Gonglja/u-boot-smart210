@@ -111,7 +111,7 @@ typedef volatile unsigned char	vu_char;
 #define debug_cond(cond, fmt, args...)		\
 	do {					\
 		if (cond)			\
-			printf(fmt, ##args);	\
+			printf("[File:%s, Line:%d, Function:%s] "fmt"",__FILE__, __LINE__ , __FUNCTION__, ##args);	\
 	} while (0)
 
 #define debug(fmt, args...)			\
