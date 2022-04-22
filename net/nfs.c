@@ -363,7 +363,7 @@ RPC request dispatcher
 static void
 NfsSend(void)
 {
-	debug("%s\n", __func__);
+	//debug("%s\n", __func__);
 
 	switch (NfsState) {
 	case STATE_PRCLOOKUP_PROG_MOUNT_REQ:
@@ -401,7 +401,7 @@ rpc_lookup_reply(int prog, uchar *pkt, unsigned len)
 
 	memcpy((unsigned char *)&rpc_pkt, pkt, len);
 
-	debug("%s\n", __func__);
+	//debug("%s\n", __func__);
 
 	if (ntohl(rpc_pkt.u.reply.id) > rpc_id)
 		return -NFS_RPC_ERR;
@@ -507,7 +507,7 @@ nfs_readlink_reply(uchar *pkt, unsigned len)
 	struct rpc_t rpc_pkt;
 	int rlen;
 
-	debug("%s\n", __func__);
+	//debug("%s\n", __func__);
 
 	memcpy((unsigned char *)&rpc_pkt, pkt, len);
 
@@ -544,7 +544,7 @@ nfs_read_reply(uchar *pkt, unsigned len)
 	struct rpc_t rpc_pkt;
 	int rlen;
 
-	debug("%s\n", __func__);
+	//debug("%s\n", __func__);
 
 	memcpy((uchar *)&rpc_pkt, pkt, sizeof(rpc_pkt.u.reply));
 
@@ -602,7 +602,7 @@ NfsHandler(uchar *pkt, unsigned dest, IPaddr_t sip, unsigned src, unsigned len)
 	int rlen;
 	int reply;
 
-	debug("%s\n", __func__);
+	//debug("%s\n", __func__);
 
 	if (dest != NfsOurPort)
 		return;

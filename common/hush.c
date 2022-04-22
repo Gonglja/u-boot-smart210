@@ -370,7 +370,7 @@ static void debug_printf(const char *format, ...)
 #else
 static inline void debug_printf(const char *format, ...) { }
 #endif
-#define final_printf debug_printf
+#define final_printf debug
 
 #ifdef __U_BOOT__
 static void syntax_err(void) {
@@ -476,7 +476,8 @@ static int parse_string(o_string *dest, struct p_context *ctx, const char *src);
 #endif
 static int parse_stream(o_string *dest, struct p_context *ctx, struct in_str *input0, int end_trigger);
 /*   setup: */
-static int parse_stream_outer(struct in_str *inp, int flag);
+static int 
+parse_stream_outer(struct in_str *inp, int flag);
 #ifndef __U_BOOT__
 static int parse_string_outer(const char *s, int flag);
 static int parse_file_outer(FILE *f);
@@ -880,7 +881,7 @@ static int b_check_space(o_string *o, int len)
 
 static int b_addchr(o_string *o, int ch)
 {
-	debug_printf("b_addchr: %c %d %p\n", ch, o->length, o);
+	debug("b_addchr: %c %d %p\n", ch, o->length, o);
 	if (b_check_space(o, 1)) return B_NOSPAC;
 	o->data[o->length] = ch;
 	o->length++;
@@ -953,7 +954,7 @@ static inline void cmdedit_set_initial_prompt(void)
 
 static inline void setup_prompt_string(int promptmode, char **prompt_str)
 {
-	debug_printf("setup_prompt_string %d ",promptmode);
+	debug("setup_prompt_string %d ",promptmode);
 #ifndef CONFIG_FEATURE_SH_FANCY_PROMPT
 	/* Set up the prompt */
 	if (promptmode == 1) {
@@ -967,7 +968,7 @@ static inline void setup_prompt_string(int promptmode, char **prompt_str)
 #else
 	*prompt_str = (promptmode==1)? PS1 : PS2;
 #endif
-	debug_printf("result %s\n",*prompt_str);
+	debug("result %s\n",*prompt_str);
 }
 #endif
 
@@ -1102,7 +1103,7 @@ static int file_get(struct in_str *i)
 		}
 
 #endif
-		debug_printf("b_getch: got a %d\n", ch);
+		debug("b_getch: got a %d\n", ch);
 	}
 #ifndef __U_BOOT__
 	if (ch == '\n') i->__promptme=1;
@@ -1124,7 +1125,7 @@ static int file_peek(struct in_str *i)
 		i->peek_buf[0] = fgetc(i->file);
 		i->peek_buf[1] = '\0';
 		i->p = i->peek_buf;
-		debug_printf("b_peek: got a %d\n", *i->p);
+		debug("b_peek: got a %d\n", *i->p);
 		return *i->p;
 	}
 #endif
@@ -1249,7 +1250,7 @@ static void pseudo_exec(struct child_prog *child)
 	struct built_in_command *x;
 	if (child->argv) {
 		for (i=0; is_assignment(child->argv[i]); i++) {
-			debug_printf("pid %d environment modification: %s\n",getpid(),child->argv[i]);
+			debug("pid %d environment modification: %s\n",getpid(),child->argv[i]);
 			p = insert_var_value(child->argv[i]);
 			putenv(strdup(p));
 			if (p != child->argv[i]) free(p);
@@ -1272,7 +1273,7 @@ static void pseudo_exec(struct child_prog *child)
 		 */
 		for (x = bltins; x->cmd; x++) {
 			if (strcmp(child->argv[0], x->cmd) == 0 ) {
-				debug_printf("builtin exec %s\n", child->argv[0]);
+				debug("builtin exec %s\n", child->argv[0]);
 				rcode = x->function(child);
 				fflush(stdout);
 				_exit(rcode);
@@ -1309,16 +1310,16 @@ static void pseudo_exec(struct child_prog *child)
 			/* Count argc for use in a second... */
 			for(argc_l=0;*argv_l!=NULL; argv_l++, argc_l++);
 			optind = 1;
-			debug_printf("running applet %s\n", name);
+			debug("running applet %s\n", name);
 			run_applet_by_name(name, argc_l, child->argv);
 		}
 #endif
-		debug_printf("exec of %s\n",child->argv[0]);
+		debug("exec of %s\n",child->argv[0]);
 		execvp(child->argv[0],child->argv);
 		perror_msg("couldn't exec: %s",child->argv[0]);
 		_exit(1);
 	} else if (child->group) {
-		debug_printf("runtime nesting to group\n");
+		debug("runtime nesting to group\n");
 		interactive=0;    /* crucial!!!! */
 		rcode = run_list_real(child->group);
 		/* OK to leak memory by not calling free_pipe_list,
@@ -1326,7 +1327,7 @@ static void pseudo_exec(struct child_prog *child)
 		_exit(rcode);
 	} else {
 		/* Can happen.  See what bash does with ">foo" by itself. */
-		debug_printf("trying to pseudo_exec null command\n");
+		debug("trying to pseudo_exec null command\n");
 		_exit(EXIT_SUCCESS);
 	}
 }
@@ -1434,7 +1435,7 @@ static int checkjobs(struct pipe* fg_pipe)
 		}
 
 		if(pi==NULL) {
-			debug_printf("checkjobs: pid %d was not in our list!\n", childpid);
+			debug("checkjobs: pid %d was not in our list!\n", childpid);
 			continue;
 		}
 
@@ -1515,6 +1516,7 @@ shell_terminal_error:
  */
 static int run_pipe_real(struct pipe *pi)
 {
+	debug("pi->num_progs:%d pi->progs[0].group:%d\r\n",pi->num_progs,pi->num_progs?pi->progs[0].group:0);
 	int i;
 #ifndef __U_BOOT__
 	int nextin, nextout;
@@ -1547,6 +1549,7 @@ static int run_pipe_real(struct pipe *pi)
 	pi->pgrp = -1;
 #endif
 
+	
 	/* Check if this is a simple builtin (not part of a pipe).
 	 * Builtins within pipes have to fork anyway, and are handled in
 	 * pseudo_exec.  "echo foo | read bar" doesn't work on bash, either.
@@ -1556,7 +1559,7 @@ static int run_pipe_real(struct pipe *pi)
 	if (pi->num_progs == 1 && child->group && child->subshell == 0) {
 		int squirrel[] = {-1, -1, -1};
 		int rcode;
-		debug_printf("non-subshell grouping\n");
+		debug("non-subshell grouping\n");
 		setup_redirects(child, squirrel);
 		/* XXX could we merge code with following builtin case,
 		 * by creating a pseudo builtin that calls run_list_real? */
@@ -1565,16 +1568,18 @@ static int run_pipe_real(struct pipe *pi)
 #else
 		if (pi->num_progs == 1 && child->group) {
 		int rcode;
-		debug_printf("non-subshell grouping\n");
+		debug("non-subshell grouping\n");
 		rcode = run_list_real(child->group);
 #endif
 		return rcode;
 	} else if (pi->num_progs == 1 && pi->progs[0].argv != NULL) {
+		debug("####\r\n");
 		for (i=0; is_assignment(child->argv[i]); i++) { /* nothing */ }
 		if (i!=0 && child->argv[i]==NULL) {
 			/* assignments, but no command: set the local environment */
 			for (i=0; child->argv[i]!=NULL; i++) {
-
+				debug("child->argv[%d]:%s\r\n",i,child->argv[i]);
+				debug("####\r\n");
 				/* Ok, this case is tricky.  We have to decide if this is a
 				 * local variable, or an already exported variable.  If it is
 				 * already exported, we have to export the new value.  If it is
@@ -1584,7 +1589,7 @@ static int run_pipe_real(struct pipe *pi)
 				int export_me=0;
 				char *name, *value;
 				name = xstrdup(child->argv[i]);
-				debug_printf("Local environment set: %s\n", name);
+				debug("Local environment set: %s\n", name);
 				value = strchr(name, '=');
 				if (value)
 					*value=0;
@@ -1602,6 +1607,7 @@ static int run_pipe_real(struct pipe *pi)
 		}
 		for (i = 0; is_assignment(child->argv[i]); i++) {
 			p = insert_var_value(child->argv[i]);
+			debug("####\r\n");
 #ifndef __U_BOOT__
 			putenv(strdup(p));
 #else
@@ -1614,7 +1620,7 @@ static int run_pipe_real(struct pipe *pi)
 		}
 		if (child->sp) {
 			char * str = NULL;
-
+			debug("####\r\n");
 			str = make_string(child->argv + i,
 					  child->argv_nonnull + i);
 			parse_string_outer(str, FLAG_EXIT_FROM_LOOP | FLAG_REPARSING);
@@ -1627,11 +1633,11 @@ static int run_pipe_real(struct pipe *pi)
 				int squirrel[] = {-1, -1, -1};
 				int rcode;
 				if (x->function == builtin_exec && child->argv[i+1]==NULL) {
-					debug_printf("magic exec\n");
+					debug("magic exec\n");
 					setup_redirects(child,NULL);
 					return EXIT_SUCCESS;
 				}
-				debug_printf("builtin inline %s\n", child->argv[0]);
+				debug("builtin inline %s\n", child->argv[0]);
 				/* XXX setup_redirects acts on file descriptors, not FILEs.
 				 * This is perfect for work that comes after exec().
 				 * Is it really safe for inline use?  Experimentally,
@@ -1656,6 +1662,7 @@ static int run_pipe_real(struct pipe *pi)
 			return -1;
 		}
 		/* Process the command */
+		debug("cmd_process\r\n");
 		return cmd_process(flag, child->argc, child->argv,
 				   &flag_repeat, NULL);
 #endif
@@ -1664,7 +1671,7 @@ static int run_pipe_real(struct pipe *pi)
 
 	for (i = 0; i < pi->num_progs; i++) {
 		child = & (pi->progs[i]);
-
+		debug("i:%d pi->num_progs:%d \r\n",i,pi->num_progs);
 		/* pipes are inserted between pairs of commands */
 		if ((i + 1) < pi->num_progs) {
 			if (pipe(pipefds)<0) perror_msg_and_die("pipe");
@@ -1676,6 +1683,7 @@ static int run_pipe_real(struct pipe *pi)
 
 		/* XXX test for failed fork()? */
 		if (!(child->pid = fork())) {
+			debug("Set the handling for job control signals back to the default.\r\n");
 			/* Set the handling for job control signals back to the default.  */
 			signal(SIGINT, SIG_DFL);
 			signal(SIGQUIT, SIG_DFL);
@@ -1713,7 +1721,7 @@ static int run_pipe_real(struct pipe *pi)
 					tcsetpgrp(2, pi->pgrp);
 				}
 			}
-
+			debug("pseudo_exec\r\n");
 			pseudo_exec(child);
 		}
 
@@ -1794,7 +1802,7 @@ static int run_list_real(struct pipe *pi)
 				}
 		}
 		rmode = pi->r_mode;
-		debug_printf("rmode=%d  if_code=%d  next_if_code=%d skip_more=%d\n", rmode, if_code, next_if_code, skip_more_in_this_rmode);
+		debug("rmode=%d  if_code=%d  next_if_code=%d skip_more=%d\n", rmode, if_code, next_if_code, skip_more_in_this_rmode);
 		if (rmode == skip_more_in_this_rmode && flag_skip) {
 			if (pi->followup == PIPE_SEQ) flag_skip=0;
 			continue;
@@ -1854,8 +1862,9 @@ static int run_list_real(struct pipe *pi)
 #ifndef __U_BOOT__
 		save_num_progs = pi->num_progs; /* save number of programs */
 #endif
+		debug("\r\n");
 		rcode = run_pipe_real(pi);
-		debug_printf("run_pipe_real returned %d\n",rcode);
+		debug("run_pipe_real returned %d\n",rcode);
 #ifndef __U_BOOT__
 		if (rcode!=-1) {
 			/* We only ran a builtin: rcode was set by the return value
@@ -1878,7 +1887,7 @@ static int run_list_real(struct pipe *pi)
 			} else {
 				rcode = checkjobs(pi);
 			}
-			debug_printf("checkjobs returned %d\n",rcode);
+			debug("checkjobs returned %d\n",rcode);
 		}
 		last_return_code=rcode;
 #else
@@ -2004,6 +2013,7 @@ static int run_list(struct pipe *pi)
 	if (fake_mode==0) {
 #endif
 		rcode = run_list_real(pi);
+		debug("rcode:%d\n",rcode);
 #ifndef __U_BOOT__
 	}
 #endif
@@ -2066,11 +2076,11 @@ static int glob_needed(const char *s)
 static void globprint(glob_t *pglob)
 {
 	int i;
-	debug_printf("glob_t at %p:\n", pglob);
-	debug_printf("  gl_pathc=%d  gl_pathv=%p  gl_offs=%d  gl_flags=%d\n",
+	debug("glob_t at %p:\n", pglob);
+	debug("  gl_pathc=%d  gl_pathv=%p  gl_offs=%d  gl_flags=%d\n",
 		pglob->gl_pathc, pglob->gl_pathv, pglob->gl_offs, pglob->gl_flags);
 	for (i=0; i<pglob->gl_pathc; i++)
-		debug_printf("pglob->gl_pathv[%d] = %p = %s\n", i,
+		debug("pglob->gl_pathv[%d] = %p = %s\n", i,
 			pglob->gl_pathv[i], pglob->gl_pathv[i]);
 }
 #endif
@@ -2080,26 +2090,26 @@ static int xglob(o_string *dest, int flags, glob_t *pglob)
 	int gr;
 
 	/* short-circuit for null word */
-	/* we can code this better when the debug_printf's are gone */
+	/* we can code this better when the debug's are gone */
 	if (dest->length == 0) {
 		if (dest->nonnull) {
 			/* bash man page calls this an "explicit" null */
 			gr = globhack(dest->data, flags, pglob);
-			debug_printf("globhack returned %d\n",gr);
+			debug("globhack returned %d\n",gr);
 		} else {
 			return 0;
 		}
 	} else if (glob_needed(dest->data)) {
 		gr = glob(dest->data, flags, NULL, pglob);
-		debug_printf("glob returned %d\n",gr);
+		debug("glob returned %d\n",gr);
 		if (gr == GLOB_NOMATCH) {
 			/* quote removal, or more accurately, backslash removal */
 			gr = globhack(dest->data, flags, pglob);
-			debug_printf("globhack returned %d\n",gr);
+			debug("globhack returned %d\n",gr);
 		}
 	} else {
 		gr = globhack(dest->data, flags, pglob);
-		debug_printf("globhack returned %d\n",gr);
+		debug("globhack returned %d\n",gr);
 	}
 	if (gr == GLOB_NOSPACE)
 		error_msg_and_die("out of memory during glob");
@@ -2299,7 +2309,7 @@ static int setup_redirect(struct p_context *ctx, int fd, redir_type style,
 	redir->type=style;
 	redir->fd= (fd==-1) ? redir_table[style].default_fd : fd ;
 
-	debug_printf("Redirect type %d%s\n", redir->fd, redir_table[style].descrip);
+	debug("Redirect type %d%s\n", redir->fd, redir_table[style].descrip);
 
 	/* Check for a '2>&1' type redirect */
 	redir->dup = redirect_dup_num(input);
@@ -2308,7 +2318,7 @@ static int setup_redirect(struct p_context *ctx, int fd, redir_type style,
 		/* Erik had a check here that the file descriptor in question
 		 * is legit; I postpone that to "run time"
 		 * A "-" representation of "close me" shows up as a -3 here */
-		debug_printf("Duplicating redirect '%d>&%d'\n", redir->fd, redir->dup);
+		debug("Duplicating redirect '%d>&%d'\n", redir->fd, redir->dup);
 	} else {
 		/* We do _not_ try to open the file that src points to,
 		 * since we need to return and let src be expanded first.
@@ -2386,10 +2396,10 @@ static int reserved_word(o_string *dest, struct p_context *ctx)
 	for (r=reserved_list;
 		r<reserved_list+NRES; r++) {
 		if (strcmp(dest->data, r->literal) == 0) {
-			debug_printf("found reserved word %s, code %d\n",r->literal,r->code);
+			debug("found reserved word %s, code %d\n",r->literal,r->code);
 			if (r->flag & FLAG_START) {
 				struct p_context *new = xmalloc(sizeof(struct p_context));
-				debug_printf("push stack\n");
+				debug("push stack\n");
 				if (ctx->w == RES_IN || ctx->w == RES_FOR) {
 					syntax();
 					free(new);
@@ -2410,7 +2420,7 @@ static int reserved_word(o_string *dest, struct p_context *ctx)
 			ctx->old_flag = r->flag;
 			if (ctx->old_flag & FLAG_END) {
 				struct p_context *old;
-				debug_printf("pop stack\n");
+				debug("pop stack\n");
 				done_pipe(ctx,PIPE_SEQ);
 				old = ctx->stack;
 				old->child->group = ctx->list_head;
@@ -2440,9 +2450,9 @@ static int done_word(o_string *dest, struct p_context *ctx)
 	int argc, cnt;
 #endif
 
-	debug_printf("done_word: %s %p\n", dest->data, child);
+	debug("done_word: %s %p\n", dest->data, child);
 	if (dest->length == 0 && !dest->nonnull) {
-		debug_printf("  true null, ignored\n");
+		debug("  true null, ignored\n");
 		return 0;
 	}
 #ifndef __U_BOOT__
@@ -2455,7 +2465,7 @@ static int done_word(o_string *dest, struct p_context *ctx)
 			return 1;  /* syntax error, groups and arglists don't mix */
 		}
 		if (!child->argv && (ctx->type & FLAG_PARSE_SEMICOLON)) {
-			debug_printf("checking %s for reserved-ness\n",dest->data);
+			debug("checking %s for reserved-ness\n",dest->data);
 			if (reserved_word(dest,ctx)) return ctx->w==RES_SNTX;
 		}
 #ifndef __U_BOOT__
@@ -2532,13 +2542,13 @@ static int done_command(struct p_context *ctx)
 #else
 										) {
 #endif
-		debug_printf("done_command: skipping null command\n");
+		debug("done_command: skipping null command\n");
 		return 0;
 	} else if (prog) {
 		pi->num_progs++;
-		debug_printf("done_command: num_progs incremented to %d\n",pi->num_progs);
+		debug("done_command: num_progs incremented to %d\n",pi->num_progs);
 	} else {
-		debug_printf("done_command: initializing\n");
+		debug("done_command: initializing\n");
 	}
 	pi->progs = xrealloc(pi->progs, sizeof(*pi->progs) * (pi->num_progs+1));
 
@@ -2568,7 +2578,7 @@ static int done_pipe(struct p_context *ctx, pipe_style type)
 {
 	struct pipe *new_p;
 	done_command(ctx);  /* implicit closure of previous command */
-	debug_printf("done_pipe, type %d\n", type);
+	debug("done_pipe, type %d\n", type);
 	ctx->pipe->followup = type;
 	ctx->pipe->r_mode = ctx->w;
 	new_p=new_pipe();
@@ -2658,14 +2668,14 @@ FILE *generate_stream_from_list(struct pipe *head)
 		_exit(run_list_real(head));   /* leaks memory */
 #endif
 	}
-	debug_printf("forked child %d\n",pid);
+	debug("forked child %d\n",pid);
 	close(channel[1]);
 	pf = fdopen(channel[0],"r");
-	debug_printf("pipe on FILE *%p\n",pf);
+	debug("pipe on FILE *%p\n",pf);
 #else
 	free_pipe_list(head,0);
 	pf=popen("echo surrogate response","r");
-	debug_printf("started fake pipe on FILE *%p\n",pf);
+	debug("started fake pipe on FILE *%p\n",pf);
 #endif
 	return pf;
 }
@@ -2701,7 +2711,7 @@ static int process_command_subs(o_string *dest, struct p_context *ctx, struct in
 		while (b_getch(&pipe_str)!=EOF) { /* discard */ };
 	}
 
-	debug_printf("done reading from pipe, pclose()ing\n");
+	debug("done reading from pipe, pclose()ing\n");
 	/* This is the step that wait()s for the child.  Should be pretty
 	 * safe, since we just read an EOF from its stdout.  We could try
 	 * to better, by using wait(), and keeping track of background jobs
@@ -2710,7 +2720,7 @@ static int process_command_subs(o_string *dest, struct p_context *ctx, struct in
 	mark_closed(fileno(p));
 	retcode=pclose(p);
 	free_pipe_list(inner.list_head,0);
-	debug_printf("pclosed, retcode=%d\n",retcode);
+	debug("pclosed, retcode=%d\n",retcode);
 	/* XXX this process fails to trim a single trailing newline */
 	return retcode;
 }
@@ -2822,7 +2832,7 @@ static int handle_dollar(o_string *dest, struct p_context *ctx, struct in_str *i
 	char sep[]=" ";
 #endif
 	int ch = input->peek(input);  /* first character after the $ */
-	debug_printf("handle_dollar: ch=%c\n",ch);
+	debug("handle_dollar: ch=%c\n",ch);
 	if (isalpha(ch)) {
 		b_addchr(dest, SPECIAL_VAR_SYMBOL);
 		ctx->child->sp++;
@@ -2946,7 +2956,7 @@ static int parse_stream(o_string *dest, struct p_context *ctx,
 #endif
 		next = (ch == '\n') ? 0 : b_peek(input);
 
-		debug("parse_stream: ch=%c (%d) m=%d quote=%d - %c\n",
+		debug("ch=%c (%d) m=%d quote=%d - %c\n",
 			ch >= ' ' ? ch : '.', ch, m,
 			dest->quote, ctx->stack == NULL ? '*' : '.');
 
@@ -3189,6 +3199,7 @@ static int parse_stream_outer(struct in_str *inp, int flag)
 #ifndef __U_BOOT__
 			run_list(ctx.list_head);
 #else
+			debug("run_list:%p %p\n",&ctx,&ctx.list_head);
 			code = run_list(ctx.list_head);
 			if (code == -2) {	/* exit */
 				b_free(&temp);
@@ -3396,7 +3407,7 @@ int hush_main(int argc, char * const *argv)
 
 
 	if (argv[0] && argv[0][0] == '-') {
-		debug_printf("\nsourcing /etc/profile\n");
+		debug("\nsourcing /etc/profile\n");
 		if ((input = fopen("/etc/profile", "r")) != NULL) {
 			mark_open(fileno(input));
 			parse_file_outer(input);
@@ -3444,7 +3455,7 @@ int hush_main(int argc, char * const *argv)
 		interactive++;
 	}
 
-	debug_printf("\ninteractive=%d\n", interactive);
+	debug("\ninteractive=%d\n", interactive);
 	if (interactive) {
 		/* Looks like they want an interactive shell */
 #ifndef CONFIG_FEATURE_SH_EXTRA_QUIET
@@ -3459,7 +3470,7 @@ int hush_main(int argc, char * const *argv)
 		goto final_return;
 	}
 
-	debug_printf("\nrunning script '%s'\n", argv[optind]);
+	debug("\nrunning script '%s'\n", argv[optind]);
 	global_argv = argv+optind;
 	global_argc = argc-optind;
 	input = xfopen(argv[optind], "r");

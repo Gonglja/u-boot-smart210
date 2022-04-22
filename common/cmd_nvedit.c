@@ -212,7 +212,7 @@ static int _do_env_set(int flag, int argc, char * const argv[])
 	ENTRY e, *ep;
 	int env_flag = H_INTERACTIVE;
 
-	debug("Initial value for argc=%d\n", argc);
+	//debug("Initial value for argc=%d\n", argc);
 	while (argc > 1 && **(argv + 1) == '-') {
 		char *arg = *++argv;
 
@@ -227,7 +227,7 @@ static int _do_env_set(int flag, int argc, char * const argv[])
 			}
 		}
 	}
-	debug("Final value for argc=%d\n", argc);
+	debug("flag=%x argc=%d argv[1]=%s argv[2]=%s\n", flag, argc, argv[1], argv[2]);
 	name = argv[1];
 	value = argv[2];
 
@@ -282,7 +282,9 @@ static int _do_env_set(int flag, int argc, char * const argv[])
 int setenv(const char *varname, const char *varvalue)
 {
 	const char * const argv[4] = { "setenv", varname, varvalue, NULL };
-
+	
+	debug("varname:%s varvalue:%s\r\n",varname,varvalue);
+	
 	/* before import into hashtable */
 	if (!(gd->flags & GD_FLG_ENV_READY))
 		return 1;

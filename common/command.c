@@ -493,7 +493,8 @@ void fixup_cmdtable(cmd_tbl_t *cmdtp, int size)
 static int cmd_call(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
 	int result;
-
+	debug("cmdtp:%p flag:%d argc:%d\r\n",cmdtp,flag,argc);
+	debug("cmdtp->name:%s maxargs:%d cmd:%p usage:%s \r\n",cmdtp->name,cmdtp->maxargs,cmdtp->cmd,cmdtp->usage);
 	result = (cmdtp->cmd)(cmdtp, flag, argc, argv);
 	if (result)
 		debug("Command failed, result=%d", result);
@@ -505,7 +506,7 @@ enum command_ret_t cmd_process(int flag, int argc, char * const argv[],
 {
 	enum command_ret_t rc = CMD_RET_SUCCESS;
 	cmd_tbl_t *cmdtp;
-
+	debug("flag:%d argc:%d argv[0]=%s\r\n",flag,argc,argv);
 	/* Look up command in command table */
 	cmdtp = find_cmd(argv[0]);
 	if (cmdtp == NULL) {
@@ -533,6 +534,7 @@ enum command_ret_t cmd_process(int flag, int argc, char * const argv[],
 	if (!rc) {
 		if (ticks)
 			*ticks = get_timer(0);
+		debug("cmd_call cmdtp->name:%s\r\n",cmdtp->name);
 		rc = cmd_call(cmdtp, flag, argc, argv);
 		if (ticks)
 			*ticks = get_timer(*ticks);
