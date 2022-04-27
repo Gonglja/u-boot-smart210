@@ -656,7 +656,7 @@ int genimg_get_format(const void *img_addr)
 	const image_header_t *hdr;
 
 	hdr = (const image_header_t *)img_addr;
-	if (image_check_magic(hdr))
+	if (image_check_magic(hdr))// 检测幻数
 		format = IMAGE_FORMAT_LEGACY;
 #if defined(CONFIG_FIT) || defined(CONFIG_OF_LIBFDT)
 	else {
@@ -1001,7 +1001,7 @@ int boot_ramdisk_high(struct lmb *lmb, ulong rd_data, ulong rd_len,
 
 	debug("## initrd_high = 0x%08lx, copy_to_ram = %d\n",
 			initrd_high, initrd_copy_to_ram);
-
+	// 此处为0，因为前面从bootm的第二个参数传进来的为"-"
 	if (rd_data) {
 		if (!initrd_copy_to_ram) {	/* zero-copy ramdisk support */
 			debug("   in-place initrd\n");

@@ -467,7 +467,6 @@ static int dm9000_rx(struct eth_device *netdev)
 	u8 rxbyte, *rdptr = (u8 *) NetRxPackets[0];
 	u16 RxStatus, RxLen = 0;
 	struct board_info *db = &dm9000_info;
-
 	/* Check packet ready or not, we must check
 	   the ISR status first for DM9000A */
 	if (!(DM9000_ior(DM9000_ISR) & 0x01)) /* Rx-ISR bit must be set. */

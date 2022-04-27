@@ -494,6 +494,10 @@ static int cmd_call(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
 	int result;
 	debug("cmdtp:%p flag:%d argc:%d\r\n",cmdtp,flag,argc);
+	int i=0;
+	for(;i<argc;i++){
+		printf("argv[%d]:%s\r\n",i,argv[i]);
+	}
 	debug("cmdtp->name:%s maxargs:%d cmd:%p usage:%s \r\n",cmdtp->name,cmdtp->maxargs,cmdtp->cmd,cmdtp->usage);
 	result = (cmdtp->cmd)(cmdtp, flag, argc, argv);
 	if (result)
@@ -506,7 +510,11 @@ enum command_ret_t cmd_process(int flag, int argc, char * const argv[],
 {
 	enum command_ret_t rc = CMD_RET_SUCCESS;
 	cmd_tbl_t *cmdtp;
-	debug("flag:%d argc:%d argv[0]=%s\r\n",flag,argc,argv);
+	debug("flag:%d argc:%d\r\n",flag,argc);
+	int i=0;
+	for(;i<argc;i++){
+		printf("argv[%d]:%s\r\n",i,argv[i]);
+	}
 	/* Look up command in command table */
 	cmdtp = find_cmd(argv[0]);
 	if (cmdtp == NULL) {

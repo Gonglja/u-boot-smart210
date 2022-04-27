@@ -1862,7 +1862,7 @@ static int run_list_real(struct pipe *pi)
 #ifndef __U_BOOT__
 		save_num_progs = pi->num_progs; /* save number of programs */
 #endif
-		debug("\r\n");
+		debug("run_pipe_real\r\n");
 		rcode = run_pipe_real(pi);
 		debug("run_pipe_real returned %d\n",rcode);
 #ifndef __U_BOOT__
@@ -3243,6 +3243,7 @@ static int parse_string_outer(const char *s, int flag)
 int parse_string_outer(const char *s, int flag)
 #endif	/* __U_BOOT__ */
 {
+	debug("%s\r\n\n",s);
 	struct in_str input;
 #ifdef __U_BOOT__
 	char *p = NULL;

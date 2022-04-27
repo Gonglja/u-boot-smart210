@@ -224,6 +224,7 @@ static int bootm_find_os(cmd_tbl_t *cmdtp, int flag, int argc,
 	const void *os_hdr;
 
 	/* get kernel image header, start address and length */
+	// 验证内核，获取kernel起始地址和长度
 	os_hdr = boot_get_kernel(cmdtp, flag, argc, argv,
 			&images, &images.os.image_start, &images.os.image_len);
 	if (images.os.image_len == 0) {
@@ -231,7 +232,8 @@ static int bootm_find_os(cmd_tbl_t *cmdtp, int flag, int argc,
 		return 1;
 	}
 
-	/* get image parameters */
+	/* get image parameters */ 
+	// 更新images中的参数
 	switch (genimg_get_format(os_hdr)) {
 	case IMAGE_FORMAT_LEGACY:
 		images.os.type = image_get_type(os_hdr);
@@ -279,7 +281,8 @@ static int bootm_find_os(cmd_tbl_t *cmdtp, int flag, int argc,
 		return 1;
 	}
 
-	/* find kernel entry point */
+	/* find kernel entry point */ 
+	// 获取内核的entry point
 	if (images.legacy_hdr_valid) {
 		images.ep = image_get_ep(&images.legacy_hdr_os_copy);
 #if defined(CONFIG_FIT)
@@ -644,7 +647,7 @@ static int do_bootm_states(cmd_tbl_t *cmdtp, int flag, int argc,
 	/* Load the OS */
 	if (!ret && (states & BOOTM_STATE_LOADOS)) {
 		ulong load_end;
-
+		// 禁用中断，禁用网络，禁用usb设备
 		iflag = bootm_disable_interrupts();
 		ret = bootm_load_os(images, &load_end, 0);
 		if (ret == 0)
@@ -794,7 +797,11 @@ int do_bootm(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 		relocated = 1;
 	}
 #endif
-
+	debug("argc:%d\r\n",argc);
+	int idx=0; 
+	for(;idx<argc;idx++){
+		printf("argv[%d]:%s\r\n",idx,argv[idx]);
+	}
 	/* determine if we have a sub command */
 	argc--; argv++;
 	if (argc > 0) {
@@ -853,26 +860,26 @@ int bootm_maybe_autostart(cmd_tbl_t *cmdtp, const char *cmd)
 static image_header_t *image_get_kernel(ulong img_addr, int verify)
 {
 	image_header_t *hdr = (image_header_t *)img_addr;
-
+	// 验证幻数
 	if (!image_check_magic(hdr)) {
 		puts("Bad Magic Number\n");
 		bootstage_error(BOOTSTAGE_ID_CHECK_MAGIC);
 		return NULL;
 	}
 	bootstage_mark(BOOTSTAGE_ID_CHECK_HEADER);
-
+	// 验证hcrc
 	if (!image_check_hcrc(hdr)) {
 		puts("Bad Header Checksum\n");
 		bootstage_error(BOOTSTAGE_ID_CHECK_HEADER);
 		return NULL;
 	}
-
+	// 剩下的就是标记打印
 	bootstage_mark(BOOTSTAGE_ID_CHECK_CHECKSUM);
 	image_print_contents(hdr);
 
 	if (verify) {
 		puts("   Verifying Checksum ... ");
-		if (!image_check_dcrc(hdr)) {
+		if (!image_check_dcrc(hdr)) { // 验证dcrc
 			printf("Bad Data CRC\n");
 			bootstage_error(BOOTSTAGE_ID_CHECK_CHECKSUM);
 			return NULL;
@@ -880,7 +887,7 @@ static image_header_t *image_get_kernel(ulong img_addr, int verify)
 		puts("OK\n");
 	}
 	bootstage_mark(BOOTSTAGE_ID_CHECK_ARCH);
-
+	// 目标平台验证
 	if (!image_check_target_arch(hdr)) {
 		printf("Unsupported Architecture 0x%x\n", image_get_arch(hdr));
 		bootstage_error(BOOTSTAGE_ID_CHECK_ARCH);
@@ -930,6 +937,7 @@ static const void *boot_get_kernel(cmd_tbl_t *cmdtp, int flag, int argc,
 				fit_uname_kernel, img_addr);
 #endif
 	} else {
+		// bootm 0x2000_0000 - 0x2100_0000 一共四个参数，但是上面已经去掉了bootm，所以此处第一个参数就是kernel的加载地址
 		img_addr = simple_strtoul(argv[0], NULL, 16);
 		debug("*  kernel: cmdline image address = 0x%08lx\n", img_addr);
 	}
@@ -937,13 +945,14 @@ static const void *boot_get_kernel(cmd_tbl_t *cmdtp, int flag, int argc,
 	bootstage_mark(BOOTSTAGE_ID_CHECK_MAGIC);
 
 	/* copy from dataflash if needed */
+	// 没有定义 CONFIG_HAS_DATAFLASH，直接返回了。
 	img_addr = genimg_get_image(img_addr);
 
 	/* check image type, for FIT images get FIT kernel node */
 	*os_data = *os_len = 0;
 	buf = map_sysmem(img_addr, 0);
-	switch (genimg_get_format(buf)) {
-	case IMAGE_FORMAT_LEGACY:
+	switch (genimg_get_format(buf)) { // 检测幻数，返回内核格式
+	case IMAGE_FORMAT_LEGACY:		  // 进入这
 		printf("## Booting kernel from Legacy Image at %08lx ...\n",
 				img_addr);
 		hdr = image_get_kernel(img_addr, images->verify);
@@ -951,7 +960,7 @@ static const void *boot_get_kernel(cmd_tbl_t *cmdtp, int flag, int argc,
 			return NULL;
 		bootstage_mark(BOOTSTAGE_ID_CHECK_IMAGETYPE);
 
-		/* get os_data and os_len */
+		/* get os_data and os_len */ // 获取kernel中data的起始位置和大小
 		switch (image_get_type(hdr)) {
 		case IH_TYPE_KERNEL:
 		case IH_TYPE_KERNEL_NOLOAD:
