@@ -92,7 +92,8 @@ _end_vect:
  *
  *************************************************************************/
 
-#ifdef CONFIG_USE_IRQ        //如果使用中断IRQ（肯定用到的）
+#ifdef CONFIG_USE_IRQ        //如果使用中断IRQ
+
 /* IRQ stack memory (calculated at run-time) */
 .globl IRQ_STACK_START       //表示堆栈指针开始的地方
 IRQ_STACK_START:

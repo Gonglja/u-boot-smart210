@@ -800,7 +800,7 @@ int do_bootm(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	debug("argc:%d\r\n",argc);
 	int idx=0; 
 	for(;idx<argc;idx++){
-		printf("argv[%d]:%s\r\n",idx,argv[idx]);
+		debug("argv[%d]:%s\r\n",idx,argv[idx]);
 	}
 	/* determine if we have a sub command */
 	argc--; argv++;

@@ -28,8 +28,9 @@
 #define CONFIG_ARCH_CPU_INIT
 
 /* DEBUG Mode */
-#define DEBUG
+
 /*
+#define DEBUG
 #define CONFIG_DM9000_DEBUG
 */
 
